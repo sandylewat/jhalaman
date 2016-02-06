@@ -1,6 +1,11 @@
+/**
+ * Utility functions
+ */
 
 package jhalaman.image;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.File;
@@ -37,70 +42,52 @@ public class Utility {
                 cproperties.put(pnames[i], buffer.getProperty(pnames[i]));
             }
         }
-        return new BufferedImage(cm, buffer.copyData(null), cm.isAlphaPremultiplied(), cproperties); 
-    }
-    
-    public static float[][] grayscaleToFloatMatrix(BufferedImage buffer) {
-        float[][] out = new float[buffer.getWidth()][buffer.getHeight()];
-        for (int i = 0; i < buffer.getWidth(); ++i) {
-            for (int j = 0; j < buffer.getHeight(); ++j) {
-                out[i][j] = Utility.B(buffer.getRGB(i, j));
-            }
-        }
-        return out;
-    }
-    
-    public static int[][] grayscaleToIntMatrix(BufferedImage buffer) {
-        int[][] out = new int[buffer.getWidth()][buffer.getHeight()];
-        for (int i = 0; i < buffer.getWidth(); ++i) {
-            for (int j = 0; j < buffer.getHeight(); ++j) {
-                out[i][j] = Utility.B(buffer.getRGB(i, j));
-            }
-        }
-        return out;
-    }
-    
-    public static BufferedImage matrixToGrayscale(float[][] buffer) {
-        BufferedImage out = new BufferedImage(buffer.length, buffer[0].length, BufferedImage.TYPE_BYTE_GRAY);
-        int gray;
-        for (int i = 0; i < buffer.length; ++i) {
-            for (int j = 0; j < buffer[0].length; ++j) {
-                gray = (int) buffer[i][j];
-                gray = gray > 255 ? 255 : gray;
-                gray = gray < 0 ? 0 : gray;
-                out.setRGB(i, j, toRGB(gray, gray, gray));
-            }
-        }
-        return out;
-    }
-    
-    public static BufferedImage matrixToGrayscale(int[][] buffer) {
-        BufferedImage out = new BufferedImage(buffer.length, buffer[0].length, BufferedImage.TYPE_BYTE_GRAY);
-        int gray;
-        for (int i = 0; i < buffer.length; ++i) {
-            for (int j = 0; j < buffer[0].length; ++j) {
-                gray = buffer[i][j];
-                gray = gray > 255 ? 255 : gray;
-                gray = gray < 0 ? 0 : gray;
-                out.setRGB(i, j, toRGB(gray, gray, gray));
-            }
-        }
-        return out;
+        return new BufferedImage(cm, buffer.copyData(null), cm.isAlphaPremultiplied(), cproperties);
     }
     
     public static int R (int pix) {
-        return (pix >> 16) & 0xff;
+        return (pix & 0xff0000) >> 16;
     }
     
     public static int G (int pix) {
-        return (pix >> 8) & 0xff;
+        return (pix & 0xff00) >> 8;
     }
     
     public static int B (int pix) {
-        return  (pix) & 0xff;
+        return  (pix & 0xff);
     }
     
     public static int toRGB(int R, int G, int B) {
-        return  (R << 16 | G << 8 | B) & 0xffffff;
+        return  (R << 16 | G << 8 | B) & 0xffffffff;
+    }
+    
+    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        int w = img.getWidth();
+        int h = img.getHeight();
+        BufferedImage dimg = dimg = new BufferedImage(newW, newH, img.getType());  
+        Graphics2D g = dimg.createGraphics();  
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);  
+        g.drawImage(img, 0, 0, newW, newH, 0, 0, w, h, null);  
+        g.dispose();  
+        return dimg;  
+    }
+    
+    public static BufferedImage redraw(BufferedImage img, int maxW, int maxH) {
+        int width = img.getWidth();
+        int height = img.getHeight();
+        
+        if (width > maxW) {
+            if (height / width * maxW > maxH)
+                return resize(img, (int) (width * maxH / height), maxH);
+            else
+                return resize(img, maxW, (int) (height * maxW / width));
+            
+        } else if (height > maxH) {
+            if (width / height * maxH > maxW)
+                return resize(img, maxW, (int) (height * maxW / width));
+            else
+                return resize(img, (int) (width * maxH / height), maxH);    
+        } else
+            return resize(img, width , height);
     }
 }
