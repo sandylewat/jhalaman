@@ -7,7 +7,7 @@ It basically provides image preprocessing and features extraction for leaf recog
 
 ## How well does it perform
 I used Naive Bayes on the cleaned training and test data with the external features, the accuracy was 30.1887%.
-Best feature was RLP or Width-Height Ratio
+Best feature was RLP or Width-Height Ratio.  
 ![alt text](./images/RLP.png "RLP distribution")
 
 ## License
